@@ -554,25 +554,27 @@
   <section class="page" id="page-about">
     <div class="about-inner">
       <div class="label" id="about-label">About</div>
-      <h2 id="about-heading">Artist,<br>film enthusiast,<br>friend to bugs!</h2>
-      <p id="about-p1">Artist, film enthusiast, friend to bugs!
+      <h2 id="about-heading">Here to make<br>you look good.</h2>
+      <p id="about-p1">My goal is to uplift businesses big and small through:
 
-My name is Chris Gale, and along with a BFA in Graphic Design, I have experience a variety of design disciplines including:
+Modern brand design,
 
-Branding Packages,
+business cards,
 
-Animation,
+zines,
 
-Posters,
+2D & 3D animation,
 
-Digital Asset Creation/Management,
+web design,
 
-Web Design,
+vibrant illustration,
 
-Wayfinding,
+wayfinding,
 
- and Cover Design </p>
-      <p id="about-p2">Based in Spooner, WI. Available for freelance and collaboration worldwide.</p>
+and Signage.<br>I want to continue to explore and learn each day. We consume content and design every day, and my goal in life is to leave my mark within the noise.<br>
+
+I know what it’s like to have to prove my worth, and I believe I can help others do the same.</p>
+      <p id="about-p2">Based in Spooner WI. Available for freelance and collaboration worldwide.</p>
       <div class="skills-row" id="about-skills">
         <span class="skill-chip">Brand Identity</span>
         <span class="skill-chip">Typography</span>
@@ -762,8 +764,12 @@ Wayfinding,
     const sidenav = document.getElementById('sidenav');
     if (darkPages.includes(id)) {
       sidenav.classList.add('on-dark');
+      cursor.style.background = '#fb0000';
+      cursor.style.mixBlendMode = 'normal';
     } else {
       sidenav.classList.remove('on-dark');
+      cursor.style.background = 'var(--black)';
+      cursor.style.mixBlendMode = 'multiply';
     }
   }
 
