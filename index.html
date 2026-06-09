@@ -520,15 +520,34 @@
         padding: 0 20px 0 20px;
       }
 
-      /* cards a bit smaller on mobile */
+      /* gallery scrolls vertically on mobile */
+      #page-work {
+        align-items: flex-start;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      #gallery-track {
+        flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 20px;
+        height: auto;
+        min-height: 100%;
+        scroll-snap-type: y mandatory;
+        align-items: center;
+        width: 100%;
+      }
+
       .project-card {
-        width: 200px;
-        height: 300px;
+        width: 85vw;
+        height: 56vw;
+        scroll-snap-align: start;
       }
 
       .project-card:hover {
-        width: 200px;
-        height: 300px;
+        width: 85vw;
+        height: 56vw;
         transform: none;
       }
 
