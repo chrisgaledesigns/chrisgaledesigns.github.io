@@ -436,12 +436,149 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
       background-size: 200px 200px;
     }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+
+      html, body { overflow: hidden; }
+
+      /* hide cursor on touch */
+      #cursor { display: none; }
+
+      /* side nav becomes top logo only */
+      #sidenav {
+        width: 100%;
+        height: 56px;
+        top: 0; left: 0;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 0 12px;
+        background: transparent;
+        z-index: 9000;
+      }
+
+      #sidenav .logo {
+        position: static;
+      }
+
+      #sidenav .logo svg {
+        width: 48px; height: 48px;
+      }
+
+      /* hide the vertical nav links */
+      #sidenav .nav-links {
+        display: none;
+      }
+
+      /* bottom nav bar */
+      #mobile-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0;
+        width: 100%;
+        height: 60px;
+        z-index: 9000;
+        background: var(--black);
+        align-items: stretch;
+      }
+
+      #mobile-nav a {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 0.85rem;
+        letter-spacing: 0.15em;
+        color: #444;
+        text-decoration: none;
+        border-top: 2px solid transparent;
+        transition: color 0.2s, border-color 0.2s;
+      }
+
+      #mobile-nav a.active {
+        color: var(--red);
+        border-top-color: var(--red);
+      }
+
+      /* pages fill full screen minus top logo bar and bottom nav */
+      #pages {
+        left: 0;
+        top: 56px;
+        width: 100vw;
+        height: calc(100vh - 56px - 60px);
+      }
+
+      /* gallery fade strip much narrower on mobile */
+      #gallery-fade-left {
+        width: 40px;
+        background: linear-gradient(to right, var(--red) 30%, transparent 100%);
+      }
+
+      /* gallery starts with less indent */
+      #gallery-track {
+        padding: 0 20px 0 20px;
+      }
+
+      /* cards a bit smaller on mobile */
+      .project-card {
+        width: 200px;
+        height: 300px;
+      }
+
+      .project-card:hover {
+        width: 200px;
+        height: 300px;
+        transform: none;
+      }
+
+      /* shrink home text */
+      .home-text h1 {
+        font-size: clamp(3.5rem, 18vw, 6rem);
+      }
+
+      /* about page padding */
+      #page-about {
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
+      /* contact page padding */
+      #page-contact {
+        padding: 2rem;
+      }
+
+      .contact-inner h2 {
+        font-size: clamp(2.5rem, 12vw, 5rem);
+      }
+
+      /* on-dark mobile nav */
+      #mobile-nav.on-dark {
+        background: var(--black);
+      }
+      #mobile-nav.on-dark a {
+        color: #550000;
+      }
+      #mobile-nav.on-dark a.active {
+        color: var(--red);
+        border-top-color: var(--red);
+      }
+    }
   </style>
 </head>
 <body>
 
 <div id="grain"></div>
 <div id="cursor"></div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav id="mobile-nav" style="display:none">
+  <a href="#" data-page="home" class="active">Home</a>
+  <a href="#" data-page="work">Work</a>
+  <a href="#" data-page="about">About</a>
+  <a href="#" data-page="contact">Contact</a>
+</nav>
 
 <!-- VERTICAL NAV -->
 <nav id="sidenav">
@@ -554,25 +691,9 @@
   <section class="page" id="page-about">
     <div class="about-inner">
       <div class="label" id="about-label">About</div>
-      <h2 id="about-heading">Here to make<br>you look good.</h2>
-      <p id="about-p1">My goal is to uplift businesses big and small through modern brand design,
-
-business cards,
-
-zines,
-
-2D & 3D animation,
-
-web design,
-
-vibrant illustration,
-
-wayfinding,
-
-and signage.</p>
-
-
-      <p id="about-p2">Based in Spooner WI. Available for freelance and collaboration worldwide.</p>
+      <h2 id="about-heading">Made to<br>stand out.</h2>
+      <p id="about-p1">I'm Chris Gale — a designer focused on brand identity, digital experiences, and visual storytelling. I believe great design is felt before it's understood.</p>
+      <p id="about-p2">Based in [Your City]. Available for freelance and collaboration worldwide.</p>
       <div class="skills-row" id="about-skills">
         <span class="skill-chip">Brand Identity</span>
         <span class="skill-chip">Typography</span>
@@ -758,14 +879,22 @@ and signage.</p>
     const navLink = document.querySelector(`#sidenav .nav-links a[data-page="${id}"]`);
     if (navLink) navLink.classList.add('active');
 
+    // Sync mobile nav
+    document.querySelectorAll('#mobile-nav a').forEach(a => a.classList.remove('active'));
+    const mobileLink = document.querySelector(`#mobile-nav a[data-page="${id}"]`);
+    if (mobileLink) mobileLink.classList.add('active');
+
     // Swap nav colors based on page bg
     const sidenav = document.getElementById('sidenav');
+    const mobileNav = document.getElementById('mobile-nav');
     if (darkPages.includes(id)) {
       sidenav.classList.add('on-dark');
+      mobileNav.classList.add('on-dark');
       cursor.style.background = '#fb0000';
       cursor.style.mixBlendMode = 'normal';
     } else {
       sidenav.classList.remove('on-dark');
+      mobileNav.classList.remove('on-dark');
       cursor.style.background = 'var(--black)';
       cursor.style.mixBlendMode = 'multiply';
     }
@@ -777,6 +906,14 @@ and signage.</p>
       showPage(el.dataset.page);
     });
   });
+
+  // Show mobile nav on small screens
+  const mobileNav = document.getElementById('mobile-nav');
+  function checkMobile() {
+    mobileNav.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+  }
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
 
   // ── GALLERY DRAG SCROLL
   const track = document.getElementById('gallery-track');
