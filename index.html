@@ -34,7 +34,6 @@
       pointer-events: none;
       z-index: 99999;
       transform: translate(-50%, -50%);
-      transition: transform 0.08s ease, width 0.2s ease, height 0.2s ease;
       mix-blend-mode: multiply;
     }
     #cursor.grow { width: 40px; height: 40px; }
@@ -55,6 +54,11 @@
     #sidenav .logo svg {
       width: 92px; height: 92px;
       display: block;
+      transition: transform 0.3s cubic-bezier(.22,.68,0,1.3);
+    }
+
+    #sidenav .logo:hover svg {
+      transform: scale(0.8);
     }
 
     #sidenav .nav-links {
@@ -80,7 +84,7 @@
       text-align: center;
       padding: 8px 4px;
       position: relative;
-      transition: color 0.2s, background 0.2s;
+      transition: color 0.4s ease, background 0.2s;
       line-height: 1.2;
     }
 
@@ -411,7 +415,18 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── GRAIN OVERLAY ── */
+    /* ── NAV ON DARK PAGE ── */
+    #sidenav.on-dark .nav-links a {
+      color: rgba(251,0,0,0.5);
+      transition: color 0.4s ease;
+    }
+    #sidenav.on-dark .nav-links a:hover,
+    #sidenav.on-dark .nav-links a.active {
+      color: #fb0000;
+    }
+    #sidenav.on-dark .nav-links a::after {
+      background: #fb0000;
+    }
     #grain {
       position: fixed;
       inset: 0;
@@ -476,9 +491,9 @@
   <!-- HOME -->
   <section class="page active" id="page-home">
     <div class="home-text">
-      <h1>Chris<br>Gale</h1>
-      <p>Designer &amp; Creative Director</p>
-      <a href="#" class="cta" data-page="work">View Work</a>
+      <h1 id="home-name">Chris<br>Gale</h1>
+      <p id="home-title">Designer &amp; Creative Director</p>
+      <a href="#" class="cta" id="home-cta" data-page="work">View Work</a>
     </div>
   </section>
 
@@ -538,11 +553,11 @@
   <!-- ABOUT -->
   <section class="page" id="page-about">
     <div class="about-inner">
-      <div class="label">About</div>
-      <h2>Made to<br>stand out.</h2>
-      <p>I'm Chris Gale — a designer focused on brand identity, digital experiences, and visual storytelling. I believe great design is felt before it's understood.</p>
-      <p>Based in [Your City]. Available for freelance and collaboration worldwide.</p>
-      <div class="skills-row">
+      <div class="label" id="about-label">About</div>
+      <h2 id="about-heading">Made to<br>stand out.</h2>
+      <p id="about-p1">I'm Chris Gale — a designer focused on brand identity, digital experiences, and visual storytelling. I believe great design is felt before it's understood.</p>
+      <p id="about-p2">Based in [Your City]. Available for freelance and collaboration worldwide.</p>
+      <div class="skills-row" id="about-skills">
         <span class="skill-chip">Brand Identity</span>
         <span class="skill-chip">Typography</span>
         <span class="skill-chip">Art Direction</span>
@@ -556,10 +571,10 @@
   <!-- CONTACT -->
   <section class="page" id="page-contact">
     <div class="contact-inner">
-      <div class="label">Get in touch</div>
-      <h2>Let's<br>work<br>together.</h2>
-      <a href="mailto:hello@chrisgale.com" class="email-link">hello@chrisgale.com</a>
-      <div class="social-links">
+      <div class="label" id="contact-label">Get in touch</div>
+      <h2 id="contact-heading">Let's<br>work<br>together.</h2>
+      <a href="mailto:hello@chrisgale.com" class="email-link" id="contact-email">hello@chrisgale.com</a>
+      <div class="social-links" id="contact-social">
         <a href="#" target="_blank">Instagram</a>
         <a href="#" target="_blank">LinkedIn</a>
         <a href="#" target="_blank">Behance</a>
@@ -572,16 +587,151 @@
 <script>
   // ── CURSOR
   const cursor = document.getElementById('cursor');
+
+  let mouseX = 0, mouseY = 0;
+  let lastX = 0, lastY = 0;
+  let cursorSize = 12;
+  let targetSize = 12;
+  let velocityHistory = [];
+  let wobbleAngle = 0;
+  let wobbleVelocity = 0;
+  let directionHistory = [];
+  let lastAngle = 0;
+  let shaking = false;
+  let shakeTimeout;
+
+  const BASE_SIZE = 12;
+  const MAX_SIZE = 48;
+
   document.addEventListener('mousemove', e => {
-    cursor.style.left = e.clientX + 'px';
-    cursor.style.top  = e.clientY + 'px';
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    // Velocity
+    const dx = mouseX - lastX;
+    const dy = mouseY - lastY;
+    const speed = Math.sqrt(dx * dx + dy * dy);
+
+    // Track direction changes for shake detection
+    const angle = Math.atan2(dy, dx);
+    const angleDiff = Math.abs(angle - lastAngle);
+    directionHistory.push(angleDiff);
+    if (directionHistory.length > 8) directionHistory.shift();
+
+    const directionChanges = directionHistory.filter(a => a > 1.2).length;
+    if (directionChanges >= 4) {
+      shaking = true;
+      wobbleVelocity += speed * 0.4;
+      clearTimeout(shakeTimeout);
+      shakeTimeout = setTimeout(() => { shaking = false; }, 300);
+    }
+
+    lastAngle = angle;
+    lastX = mouseX;
+    lastY = mouseY;
+
+    // Size based on speed
+    velocityHistory.push(speed);
+    if (velocityHistory.length > 3) velocityHistory.shift();
+    const avgSpeed = velocityHistory.reduce((a, b) => a + b, 0) / velocityHistory.length;
+    targetSize = BASE_SIZE + Math.min(avgSpeed * 1.2, MAX_SIZE - BASE_SIZE);
   });
+
+  // Animate cursor each frame
+  function animateCursor() {
+    // Smooth size towards target
+    cursorSize += (targetSize - cursorSize) * 0.35;
+    targetSize += (BASE_SIZE - targetSize) * 0.12; // decay back to base
+
+    // Wobble physics
+    if (shaking) {
+      wobbleVelocity += (Math.random() - 0.5) * 3;
+    }
+    wobbleAngle += wobbleVelocity;
+    wobbleVelocity *= 0.7; // damping
+    wobbleAngle *= 0.75;
+
+    const size = Math.max(BASE_SIZE, cursorSize);
+    cursor.style.width  = size + 'px';
+    cursor.style.height = size + 'px';
+    cursor.style.left   = mouseX + 'px';
+    cursor.style.top    = mouseY + 'px';
+    cursor.style.transform = `translate(-50%, -50%) rotate(${wobbleAngle}deg) scale(${1 + Math.abs(wobbleAngle) * 0.01})`;
+    cursor.style.borderRadius = shaking
+      ? `${30 + wobbleAngle * 0.5}% ${70 - wobbleAngle * 0.5}% ${60 + wobbleAngle * 0.3}% ${40 - wobbleAngle * 0.3}%`
+      : '50%';
+
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
   document.querySelectorAll('a, .project-card, button').forEach(el => {
     el.addEventListener('mouseenter', () => cursor.classList.add('grow'));
     el.addEventListener('mouseleave', () => cursor.classList.remove('grow'));
   });
 
+  // ── HOME PARALLAX REPULSION
+  const parallaxEls = [
+    { el: document.getElementById('home-name'),      strength: 14, radius: 160, page: 'page-home' },
+    { el: document.getElementById('home-title'),     strength: 8,  radius: 130, page: 'page-home' },
+    { el: document.getElementById('home-cta'),       strength: 10, radius: 110, page: 'page-home' },
+    { el: document.getElementById('contact-label'),  strength: 8,  radius: 120, page: 'page-contact' },
+    { el: document.getElementById('contact-heading'),strength: 14, radius: 160, page: 'page-contact' },
+    { el: document.getElementById('contact-email'),  strength: 10, radius: 130, page: 'page-contact' },
+    { el: document.getElementById('contact-social'), strength: 8,  radius: 110, page: 'page-contact' },
+    { el: document.getElementById('about-label'),    strength: 10, radius: 160, page: 'page-about' },
+    { el: document.getElementById('about-heading'),  strength: 18, radius: 200, page: 'page-about' },
+    { el: document.getElementById('about-p1'),       strength: 7,  radius: 140, page: 'page-about' },
+    { el: document.getElementById('about-p2'),       strength: 7,  radius: 140, page: 'page-about' },
+    { el: document.getElementById('about-skills'),   strength: 10, radius: 160, page: 'page-about' },
+  ];
+
+  // Smoothed current offsets per element
+  const offsets = parallaxEls.map(() => ({ x: 0, y: 0, tx: 0, ty: 0 }));
+
+  function getCenter(el) {
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function animateParallax() {
+    parallaxEls.forEach(({ el, strength, radius, page }, i) => {
+      const onPage = document.getElementById(page).classList.contains('active');
+      if (!onPage) {
+        // snap back when not on home page
+        offsets[i].tx = 0;
+        offsets[i].ty = 0;
+      } else {
+        const c = getCenter(el);
+        const dx = mouseX - c.x;
+        const dy = mouseY - c.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < radius) {
+          // proximity factor: 1 at center, 0 at edge — inverted push away from cursor
+          const factor = Math.pow(1 - dist / radius, 1.8);
+          offsets[i].tx = (dx / dist) * strength * factor;
+          offsets[i].ty = (dy / dist) * strength * factor;
+        } else {
+          offsets[i].tx = 0;
+          offsets[i].ty = 0;
+        }
+      }
+
+      // Smooth lerp
+      offsets[i].x += (offsets[i].tx - offsets[i].x) * 0.05;
+      offsets[i].y += (offsets[i].ty - offsets[i].y) * 0.05;
+
+      el.style.transform = `translate(${offsets[i].x}px, ${offsets[i].y}px)`;
+    });
+
+    requestAnimationFrame(animateParallax);
+  }
+  animateParallax();
+
   // ── PAGE NAVIGATION
+  const darkPages = ['about']; // black bg pages
+
   function showPage(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('#sidenav .nav-links a').forEach(a => a.classList.remove('active'));
@@ -591,6 +741,14 @@
 
     const navLink = document.querySelector(`#sidenav .nav-links a[data-page="${id}"]`);
     if (navLink) navLink.classList.add('active');
+
+    // Swap nav colors based on page bg
+    const sidenav = document.getElementById('sidenav');
+    if (darkPages.includes(id)) {
+      sidenav.classList.add('on-dark');
+    } else {
+      sidenav.classList.remove('on-dark');
+    }
   }
 
   document.querySelectorAll('[data-page]').forEach(el => {
